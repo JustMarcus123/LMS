@@ -7,19 +7,20 @@ import ejs from 'ejs'
 import path from "path";
 require('dotenv').config()
 
+import {sendMail} from '../utils/sendMail'
 
 
 
 //registering new user
 
 interface IRegistrationBody{
-    name:String;
-    email:String;
-    password:String;
-    avatar?:String;
+    name:string;
+    email:string;
+    password:string;
+    avatar?:string;
 }
 
-export const registrationUser =catchAsyncError(async(req:Request, res:Response, next:NextFunction)=>{
+  export const registrationUser = catchAsyncError(async(req:Request, res:Response, next:NextFunction)=>{
     try {
         const {name,email,password} = req.body;
 
@@ -37,7 +38,25 @@ export const registrationUser =catchAsyncError(async(req:Request, res:Response, 
         const activationCode = activationToken.activationCode
 
         const data={user:{name:user.name},activationCode};
-        const html =await ejs.renderFile(path.join(__dirname,""))
+        const html =await ejs.renderFile(path.join(__dirname,"./mails/activation-mail.ejs"),data);
+
+        try {
+            await sendMail ({
+                email: user.email,
+                subject:"Activate your account",
+                template:'activation-mail.ejs',
+                data,
+            });
+
+            res.status(201).json({
+                success:true,
+                message:`please check your email: ${user.email} to activate your account`,
+                activationToken:activationToken.token
+            })
+            
+        } catch (error:any) {
+            return next(new ErrorHandler(error.message,400))
+        }
 
         
     } catch (error:any) {

@@ -5,6 +5,7 @@ require('dotenv').config()
 const express = require ('express')
 const cors = require ('cors')
 const cookieParser = require ('cookie-parser') 
+import userRouter from "./routes/user-routes";
 
 
 export const app = express(); 
@@ -22,7 +23,8 @@ app.use(cookieParser());
 app.use(cors({
     origin:process.env.ORIGIN
 }))
-
+//routes
+app.use("api/v1",userRouter)
 
 //testing api 
 
